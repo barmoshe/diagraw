@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="public/logo.png" alt="Diagraw" width="120" />
+
 # Diagraw
 
 **Mermaid diagrams that draw themselves.**
