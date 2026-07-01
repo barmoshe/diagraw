@@ -37,7 +37,7 @@ export default function Home() {
           <SelfDrawingDiagram
             source={HERO}
             trigger="load"
-            theme="dark"
+            theme="blueprint"
             options={{ stagger: 200, drawDuration: 650 }}
           />
           <span className="bp-leader hero-meta">no javascript inside</span>

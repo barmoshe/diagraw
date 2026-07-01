@@ -15,7 +15,7 @@ import {
  */
 export default function SelfDrawingDiagram({
   source,
-  theme = "dark",
+  theme = "blueprint",
   trigger = "scroll",
   options,
   className = "",

@@ -12,9 +12,76 @@
 import { AnimateOptions } from "./types";
 import { bake, serializeSvg } from "./bake";
 
-export type MermaidTheme = "default" | "base" | "dark" | "forest" | "neutral";
+export type MermaidTheme =
+  | "blueprint"
+  | "default"
+  | "base"
+  | "dark"
+  | "forest"
+  | "neutral";
 
-let mermaidInit = false;
+/**
+ * The Diagraw "blueprint" theme: cyan ink on deep blue, off-white labels, mono
+ * type. Built on mermaid's `base` theme via themeVariables so it applies to every
+ * diagram type. This is what makes diagrams look like drafting-sheet schematics
+ * instead of mermaid's muddy default dark boxes.
+ */
+const BLUEPRINT_VARS: Record<string, string> = {
+  darkMode: "true",
+  background: "transparent",
+  fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+  fontSize: "15px",
+
+  primaryColor: "#1c3d5f",
+  primaryBorderColor: "#6fd8ff",
+  primaryTextColor: "#eaf5ff",
+  lineColor: "#6fd8ff",
+
+  secondaryColor: "#254a70",
+  secondaryBorderColor: "#6fd8ff",
+  secondaryTextColor: "#eaf5ff",
+  tertiaryColor: "#16324c",
+  tertiaryBorderColor: "#3d6489",
+  tertiaryTextColor: "#eaf5ff",
+
+  mainBkg: "#1c3d5f",
+  nodeBorder: "#6fd8ff",
+  nodeTextColor: "#eaf5ff",
+  clusterBkg: "#16324c",
+  clusterBorder: "#3d6489",
+  titleColor: "#eaf5ff",
+  edgeLabelBackground: "#102438",
+
+  noteBkgColor: "#254a70",
+  noteBorderColor: "#6fd8ff",
+  noteTextColor: "#eaf5ff",
+
+  // sequence
+  actorBkg: "#1c3d5f",
+  actorBorder: "#6fd8ff",
+  actorTextColor: "#eaf5ff",
+  actorLineColor: "#6fd8ff",
+  signalColor: "#cfe9ff",
+  signalTextColor: "#eaf5ff",
+  labelBoxBkgColor: "#254a70",
+  labelBoxBorderColor: "#6fd8ff",
+  labelTextColor: "#eaf5ff",
+  loopTextColor: "#eaf5ff",
+  activationBkgColor: "#254a70",
+  activationBorderColor: "#6fd8ff",
+
+  // git graph
+  git0: "#6fd8ff",
+  git1: "#ffce7a",
+  git2: "#8fe3a6",
+  git3: "#c9a7ff",
+  gitInv0: "#102438",
+  gitBranchLabel0: "#102438",
+  gitBranchLabel1: "#102438",
+  commitLabelColor: "#eaf5ff",
+  commitLabelBackground: "#16324c",
+};
+
 let renderSeq = 0;
 
 async function getMermaid() {
@@ -25,18 +92,19 @@ async function getMermaid() {
 /** Render mermaid source to an SVG string. Throws on parse errors. */
 export async function renderMermaid(
   source: string,
-  theme: MermaidTheme = "default",
+  theme: MermaidTheme = "blueprint",
 ): Promise<string> {
   const mermaid = await getMermaid();
-  // Re-initialize each call so a theme change takes effect. securityLevel
-  // 'strict' sanitizes labels; startOnLoad off since we drive render manually.
+  const themeConfig =
+    theme === "blueprint"
+      ? { theme: "base" as const, themeVariables: BLUEPRINT_VARS }
+      : { theme };
   mermaid.initialize({
     startOnLoad: false,
-    theme,
     securityLevel: "strict",
     flowchart: { htmlLabels: true },
+    ...themeConfig,
   });
-  mermaidInit = true;
   renderSeq += 1;
   const id = `diagraw-${renderSeq}`;
   const { svg } = await mermaid.render(id, source);
@@ -63,14 +131,13 @@ export async function renderAndBake(
   source: string,
   opts: AnimateOptions,
   mount: HTMLElement,
-  theme: MermaidTheme = "default",
+  theme: MermaidTheme = "blueprint",
 ): Promise<RenderAndBakeResult> {
   const svgString = await renderMermaid(source, theme);
   mount.innerHTML = svgString;
   const element = mount.querySelector("svg");
   if (!element) throw new Error("mermaid produced no <svg> element");
 
-  // Let the browser lay it out so getBBox is populated before we measure.
   const result = bake(element, opts);
   const animatedSvg = serializeSvg(element);
   return {
@@ -81,5 +148,3 @@ export async function renderAndBake(
     axis: result.axis,
   };
 }
-
-export { mermaidInit };

@@ -32,7 +32,7 @@ export default function GalleryPage() {
                 <SelfDrawingDiagram
                   source={item.source}
                   trigger="scroll"
-                  theme="dark"
+                  theme="blueprint"
                 />
               </div>
               <div className="gallery-foot">

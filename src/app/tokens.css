@@ -30,6 +30,12 @@
   --grid:        oklch(0.86 0.125 208 / 0.06);
   --grid-strong: oklch(0.86 0.125 208 / 0.12);
 
+  /* diagram canvas: always the dark drafting ground, both site themes, so the
+   * blueprint-themed diagrams always have the right backdrop. Not overridden in
+   * html.light on purpose. */
+  --canvas-bg:   oklch(0.16 0.04 250);
+  --canvas-grid: oklch(0.86 0.125 208 / 0.09);
+
   --ok:    oklch(0.78 0.15 155);
   --warn:  oklch(0.82 0.15 80);
   --danger:oklch(0.70 0.19 25);

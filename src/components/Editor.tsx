@@ -19,6 +19,7 @@ const EASINGS = [
 ];
 
 const MERMAID_THEMES: MermaidTheme[] = [
+  "blueprint",
   "dark",
   "default",
   "neutral",
@@ -33,7 +34,7 @@ export default function Editor({
 }) {
   const [source, setSource] = useState(initialSource);
   const [opts, setOpts] = useState<AnimateOptions>(DEFAULT_OPTIONS);
-  const [theme, setTheme] = useState<MermaidTheme>("dark");
+  const [theme, setTheme] = useState<MermaidTheme>("blueprint");
   const [animatedSvg, setAnimatedSvg] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [counts, setCounts] = useState({ edges: 0, nodes: 0, labels: 0 });

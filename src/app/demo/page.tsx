@@ -61,7 +61,7 @@ export default function DemoPage() {
             order makes the flow legible in a way a static picture does not.
           </p>
           <div className="demo-stage bp-corners">
-            <SelfDrawingDiagram source={REQUEST_FLOW} trigger="scroll" theme="dark" />
+            <SelfDrawingDiagram source={REQUEST_FLOW} trigger="scroll" theme="blueprint" />
           </div>
         </section>
 
@@ -73,7 +73,7 @@ export default function DemoPage() {
             worker reads like a story.
           </p>
           <div className="demo-stage bp-corners">
-            <SelfDrawingDiagram source={ORDER_SEQ} trigger="scroll" theme="dark" />
+            <SelfDrawingDiagram source={ORDER_SEQ} trigger="scroll" theme="blueprint" />
           </div>
         </section>
 
@@ -85,7 +85,7 @@ export default function DemoPage() {
             arrives at them.
           </p>
           <div className="demo-stage bp-corners">
-            <SelfDrawingDiagram source={DEPLOY_STATE} trigger="scroll" theme="dark" />
+            <SelfDrawingDiagram source={DEPLOY_STATE} trigger="scroll" theme="blueprint" />
           </div>
         </section>
 

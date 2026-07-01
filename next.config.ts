@@ -24,9 +24,6 @@ const nextConfig: NextConfig = {
   // Pin the workspace root (a stray lockfile in a parent dir otherwise confuses
   // Turbopack's root inference).
   turbopack: { root: path.resolve() },
-  env: {
-    NEXT_PUBLIC_BASE_PATH: basePath,
-  },
 };
 
 export default nextConfig;

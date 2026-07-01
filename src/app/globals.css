@@ -147,6 +147,9 @@
   min-height: 340px;
   display: grid;
   place-items: center;
+  background: var(--canvas-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 .hero-visual .sd-stage svg {
   max-height: 460px;
@@ -339,10 +342,10 @@
   place-items: center;
   overflow: auto;
   padding: var(--space-6);
-  background-color: var(--bg);
+  background-color: var(--canvas-bg);
   background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    linear-gradient(var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 .stage-svg {
@@ -528,10 +531,10 @@
   min-height: 300px;
   display: grid;
   place-items: center;
-  background-color: var(--bg);
+  background-color: var(--canvas-bg);
   background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    linear-gradient(var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 .gallery-canvas svg {
@@ -628,10 +631,10 @@
   min-height: 320px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background-color: var(--bg);
+  background-color: var(--canvas-bg);
   background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    linear-gradient(var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 .demo-stage svg {
