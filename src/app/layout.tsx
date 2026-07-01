@@ -44,7 +44,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${grotesk.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      className={`${grotesk.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: PREPAINT }} />
       </head>
