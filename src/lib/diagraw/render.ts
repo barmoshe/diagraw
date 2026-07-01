@@ -37,6 +37,12 @@ const BLUEPRINT_VARS: Record<string, string> = {
   primaryTextColor: "#eaf5ff",
   lineColor: "#6fd8ff",
 
+  // General label text. HTML labels (flowchart/class/er) colour their <span>
+  // from `textColor`, not `nodeTextColor`, so this is what actually makes the
+  // labels readable on the dark nodes. Leaving it unset derives a dark value.
+  textColor: "#eaf5ff",
+  labelColor: "#eaf5ff",
+
   secondaryColor: "#254a70",
   secondaryBorderColor: "#6fd8ff",
   secondaryTextColor: "#eaf5ff",
@@ -82,6 +88,24 @@ const BLUEPRINT_VARS: Record<string, string> = {
   commitLabelBackground: "#16324c",
 };
 
+/**
+ * Root fix for label contrast. themeVariables alone are fragile: each diagram
+ * type routes some text through a different (sometimes underived) variable, so
+ * labels kept coming out dark-on-dark (e.g. sequence actor boxes ignore
+ * actorTextColor in v11). themeCSS is mermaid's highest-precedence hook, so we
+ * assert the on-dark label colour here once, for every diagram type. We do NOT
+ * touch git branch-label pills, which correctly sit on bright branch colours.
+ */
+const BLUEPRINT_CSS = `
+.nodeLabel, .nodeLabel p, .edgeLabel, .edgeLabel p, .cluster-label,
+.cluster-label p, .stateLabel, .messageText, .loopText, .labelText,
+.noteText, .titleText, text.actor, text.actor tspan, .classText,
+.entityLabel, .relationshipLabel {
+  fill: #eaf5ff !important;
+  color: #eaf5ff !important;
+}
+`;
+
 let renderSeq = 0;
 
 async function getMermaid() {
@@ -97,7 +121,11 @@ export async function renderMermaid(
   const mermaid = await getMermaid();
   const themeConfig =
     theme === "blueprint"
-      ? { theme: "base" as const, themeVariables: BLUEPRINT_VARS }
+      ? {
+          theme: "base" as const,
+          themeVariables: BLUEPRINT_VARS,
+          themeCSS: BLUEPRINT_CSS,
+        }
       : { theme };
   mermaid.initialize({
     startOnLoad: false,
