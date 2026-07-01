@@ -1,0 +1,97 @@
+/* tokens.css - Diagraw "Blueprint" design tokens (oklch).
+ *
+ * Unlike the workshop's light-default house system, Diagraw defaults to the
+ * dramatic blueprint DARK ground (that is the brand). A light "whiteprint"
+ * (ink on drafting paper) ships as html.light. The pre-paint script adds the
+ * `.light` class only when the user opts in; default = dark.
+ *
+ * Colors are oklch() only; body-text pairs clear WCAG AA.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* --- blueprint dark (default) --- */
+  --bg:        oklch(0.19 0.045 250);
+  --surface:   oklch(0.23 0.05 250);
+  --surface-2: oklch(0.27 0.052 250);
+  --border:    oklch(0.44 0.06 235);
+  --text:      oklch(0.95 0.02 220);
+  --text-soft: oklch(0.80 0.03 220);
+  --text-faint:oklch(0.63 0.035 225);
+
+  /* cyan "ink" line color = the primary brand */
+  --primary:      oklch(0.86 0.125 208);
+  --primary-hover:oklch(0.92 0.10 208);
+  --primary-text: oklch(0.18 0.04 250);
+  --accent:       oklch(0.82 0.14 74);   /* amber annotation */
+
+  /* graph-paper grid ink (cyan, low alpha) */
+  --grid:        oklch(0.86 0.125 208 / 0.06);
+  --grid-strong: oklch(0.86 0.125 208 / 0.12);
+
+  --ok:    oklch(0.78 0.15 155);
+  --warn:  oklch(0.82 0.15 80);
+  --danger:oklch(0.70 0.19 25);
+
+  /* --- type --- */
+  --font-sans: var(--font-app, "Space Grotesk"), system-ui, sans-serif;
+  --font-mono: var(--font-code, "JetBrains Mono"), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.0625rem);
+  --step--1: calc(var(--text-base) / 1.2);
+  --step-0:  var(--text-base);
+  --step-1:  calc(var(--text-base) * 1.25);
+  --step-2:  calc(var(--text-base) * 1.6);
+  --step-3:  calc(var(--text-base) * 2.05);
+  --step-4:  calc(var(--text-base) * 2.6);
+  --step-5:  calc(var(--text-base) * 3.4);
+  --leading: 1.6;
+  --leading-tight: 1.08;
+
+  /* --- spacing --- */
+  --space-1: 0.25rem; --space-2: 0.5rem;  --space-3: 0.75rem;
+  --space-4: 1rem;    --space-5: 1.5rem;  --space-6: 2rem;
+  --space-7: 3rem;    --space-8: 4rem;    --space-9: 6rem;
+
+  /* --- radii, shadow, motion (blueprint = near-sharp corners) --- */
+  --radius-sm: 0.125rem; --radius: 0.25rem; --radius-lg: 0.375rem; --radius-full: 999px;
+  --shadow-1: 0 1px 0 oklch(0 0 0 / 0.3);
+  --shadow-2: 0 8px 30px oklch(0.1 0.04 250 / 0.6);
+  --dur-1: 120ms; --dur-2: 260ms; --dur-3: 500ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* --- layout --- */
+  --measure: 68ch;
+  --container: 88rem;
+
+  --text-scale: 1;
+}
+
+html.light {
+  color-scheme: light;
+
+  --bg:        oklch(0.96 0.015 92);   /* drafting paper */
+  --surface:   oklch(0.93 0.02 92);
+  --surface-2: oklch(0.89 0.022 92);
+  --border:    oklch(0.55 0.05 250);
+  --text:      oklch(0.26 0.055 252);  /* ink navy */
+  --text-soft: oklch(0.42 0.055 252);
+  --text-faint:oklch(0.54 0.045 252);
+
+  --primary:      oklch(0.48 0.13 252);
+  --primary-hover:oklch(0.40 0.13 252);
+  --primary-text: oklch(0.98 0.01 92);
+  --accent:       oklch(0.60 0.16 58);
+
+  --grid:        oklch(0.48 0.13 252 / 0.08);
+  --grid-strong: oklch(0.48 0.13 252 / 0.16);
+
+  --shadow-1: 0 1px 0 oklch(0.4 0.05 252 / 0.2);
+  --shadow-2: 0 8px 30px oklch(0.4 0.05 252 / 0.18);
+}
+
+/* Higher-contrast preference (mirrored by the pre-paint script). */
+html[data-contrast="more"] {
+  --text-soft: var(--text);
+  --border: var(--text-faint);
+}
