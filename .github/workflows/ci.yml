@@ -24,6 +24,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # next-env.d.ts (asset/route type declarations) is generated, not
+      # committed - without it, tsc fails on the PNG import in a fresh clone.
+      - name: Generate Next.js types
+        run: npx next typegen
+
       - name: Typecheck
         run: npm run typecheck
 
