@@ -7,7 +7,7 @@ import { SAMPLES } from "@/lib/samples";
 export const metadata: Metadata = {
   title: "Changelog",
   description:
-    "Diagraw release notes: what shipped, when, and why - including the community-feedback release with pan, zoom, click-to-replay, save & share, and people diagrams.",
+    "Diagraw release notes: what shipped and when - editor pan, zoom, click-to-replay, autosave, shareable links, .mmd round-trip, and animated people diagrams.",
 };
 
 const journeySample = SAMPLES.find((s) => s.id === "journey")!;
@@ -20,20 +20,19 @@ export default function ChangelogPage() {
           <span className="bp-figure">Fig. / Changelog</span>
           <h1>Release notes</h1>
           <p className="lead">
-            What shipped and why. Diagraw grows by feedback: comment on a post,
-            open an issue, and it lands here.
+            What shipped, and when. Each release links to the exact behavior in
+            the editor.
           </p>
         </div>
 
         <article className="release bp-corners" id="v1-1">
           <header className="release-head">
             <span className="bp-kicker">v1.1 · 2026-07-12</span>
-            <h2>The community-feedback release</h2>
+            <h2>Viewport, persistence, people diagrams</h2>
             <p>
-              Days after launch, the feedback arrived: real diagrams get complex,
-              real work needs to survive a closed tab, and the diagrams people
-              draw most are about people. All of it shipped. Thanks to{" "}
-              <strong>Nir Barel</strong> for the comment that shaped this release.
+              The editor grows into a tool: a real viewport for complex
+              diagrams, state that survives a closed tab and travels in a URL,
+              and animation support for the person-shaped diagram types.
             </p>
           </header>
 
