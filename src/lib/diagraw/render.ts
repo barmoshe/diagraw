@@ -76,6 +76,16 @@ const BLUEPRINT_VARS: Record<string, string> = {
   activationBkgColor: "#254a70",
   activationBorderColor: "#6fd8ff",
 
+  // journey (sections/tasks pull from the fillType cycle)
+  fillType0: "#1c3d5f",
+  fillType1: "#254a70",
+  fillType2: "#16324c",
+  fillType3: "#2d5a85",
+  fillType4: "#1c3d5f",
+  fillType5: "#254a70",
+  fillType6: "#16324c",
+  fillType7: "#2d5a85",
+
   // git graph
   git0: "#6fd8ff",
   git1: "#ffce7a",
@@ -103,6 +113,16 @@ const BLUEPRINT_CSS = `
 .entityLabel, .relationshipLabel {
   fill: #eaf5ff !important;
   color: #eaf5ff !important;
+}
+text.task, text.task tspan, text.journey-section, text.journey-section tspan,
+text.legend, text.legend tspan, div.task, div.task .label,
+div.journey-section, div.journey-section .label {
+  fill: #eaf5ff !important;
+  color: #eaf5ff !important;
+}
+circle.face {
+  fill: #ffce7a !important;
+  stroke: #102438 !important;
 }
 `;
 

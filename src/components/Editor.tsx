@@ -9,6 +9,12 @@ import {
   type MermaidTheme,
 } from "@/lib/diagraw";
 import { DEFAULT_SOURCE, SAMPLES } from "@/lib/samples";
+import {
+  buildShareUrl,
+  loadLocalSnapshot,
+  readHashSnapshot,
+  saveLocalSnapshot,
+} from "@/lib/persist";
 
 const EASINGS = [
   { value: "cubic-bezier(0.2, 0.7, 0.2, 1)", label: "Smooth" },
@@ -27,6 +33,17 @@ const MERMAID_THEMES: MermaidTheme[] = [
   "base",
 ];
 
+const ZOOM_MIN = 0.2;
+const ZOOM_MAX = 8;
+
+interface StageView {
+  zoom: number;
+  x: number;
+  y: number;
+}
+
+const FIT_VIEW: StageView = { zoom: 1, x: 0, y: 0 };
+
 export default function Editor({
   initialSource = DEFAULT_SOURCE,
 }: {
@@ -42,10 +59,22 @@ export default function Editor({
   const [toast, setToast] = useState<string | null>(null);
   const [split, setSplit] = useState(33);
   const [isMax, setIsMax] = useState(false);
+  const [view, setView] = useState<StageView>(FIT_VIEW);
+  const [isPanning, setIsPanning] = useState(false);
 
   const mountRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const stageViewRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const dragging = useRef(false);
+  const panPointer = useRef<{
+    id: number;
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+  } | null>(null);
 
   const setOpt = <K extends keyof AnimateOptions>(
     key: K,
@@ -75,13 +104,40 @@ export default function Editor({
     };
   }, [source, opts, theme]);
 
-  // Prefill from ?sample= (the gallery's "open in editor" links).
+  // Restore on mount. Precedence: shared link (#s=) > gallery prefill
+  // (?sample=) > autosaved session > the default sample.
   useEffect(() => {
+    const shared = readHashSnapshot();
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (shared) {
+      setSource(shared.source);
+      setOpts(shared.opts);
+      setTheme(shared.theme);
+      return;
+    }
     const id = new URLSearchParams(window.location.search).get("sample");
     const s = SAMPLES.find((x) => x.id === id);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (s) setSource(s.source);
+    if (s) {
+      setSource(s.source);
+      return;
+    }
+    const saved = loadLocalSnapshot();
+    if (saved) {
+      setSource(saved.source);
+      setOpts(saved.opts);
+      setTheme(saved.theme);
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
+
+  // Autosave, debounced — so a closed tab or refresh never loses work.
+  useEffect(() => {
+    const t = setTimeout(
+      () => saveLocalSnapshot({ v: 1, source, opts, theme }),
+      400,
+    );
+    return () => clearTimeout(t);
+  }, [source, opts, theme]);
 
   // Draggable split.
   useEffect(() => {
@@ -103,6 +159,99 @@ export default function Editor({
     };
   }, []);
 
+  // Zoom about a focal point given in client coordinates. The math works in
+  // the stage-view's *laid-out* frame: with a centered transform-origin, the
+  // laid-out center is the transformed rect's center minus the translation.
+  const zoomAt = useCallback((factor: number, clientX: number, clientY: number) => {
+    setView((v) => {
+      const zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, v.zoom * factor));
+      if (zoom === v.zoom) return v;
+      const el = stageViewRef.current;
+      if (!el) return { ...v, zoom };
+      const rect = el.getBoundingClientRect();
+      const cx = clientX - (rect.left + rect.width / 2 - v.x);
+      const cy = clientY - (rect.top + rect.height / 2 - v.y);
+      const k = zoom / v.zoom;
+      return { zoom, x: cx - k * (cx - v.x), y: cy - k * (cy - v.y) };
+    });
+  }, []);
+
+  // Zoom from the +/- buttons: focal point = the middle of the stage.
+  const zoomStep = useCallback(
+    (factor: number) => {
+      const rect = stageRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      zoomAt(factor, rect.left + rect.width / 2, rect.top + rect.height / 2);
+    },
+    [zoomAt],
+  );
+
+  const resetView = useCallback(() => setView(FIT_VIEW), []);
+
+  // Wheel: ctrl/cmd+wheel (and trackpad pinch) zooms at the cursor; a plain
+  // wheel pans. React's onWheel is passive, so preventDefault needs a manual
+  // non-passive listener.
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.ctrlKey || e.metaKey) {
+        zoomAt(Math.exp(-e.deltaY * 0.0022), e.clientX, e.clientY);
+      } else {
+        setView((v) => ({ ...v, x: v.x - e.deltaX, y: v.y - e.deltaY }));
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [zoomAt]);
+
+  // Pan by pressing and dragging anywhere on the stage.
+  const onStagePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (e.button !== 0 && e.button !== 1) return;
+      if ((e.target as Element).closest(".stage-tools")) return;
+      panPointer.current = {
+        id: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        originX: view.x,
+        originY: view.y,
+      };
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setIsPanning(true);
+    },
+    [view.x, view.y],
+  );
+
+  const onStagePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const p = panPointer.current;
+      if (!p || e.pointerId !== p.id) return;
+      const dx = e.clientX - p.startX;
+      const dy = e.clientY - p.startY;
+      setView((v) => ({ ...v, x: p.originX + dx, y: p.originY + dy }));
+    },
+    [],
+  );
+
+  const onStagePointerEnd = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (panPointer.current?.id !== e.pointerId) return;
+      panPointer.current = null;
+      setIsPanning(false);
+    },
+    [],
+  );
+
+  const onStageDoubleClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if ((e.target as Element).closest(".stage-tools")) return;
+      resetView();
+    },
+    [resetView],
+  );
+
   const flash = useCallback((msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 1800);
@@ -113,16 +262,24 @@ export default function Editor({
     flash("Animated SVG copied");
   }, [animatedSvg, flash]);
 
-  const downloadSvg = useCallback(() => {
-    const blob = new Blob([animatedSvg], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
+  const downloadBlob = useCallback((data: string, type: string, name: string) => {
+    const url = URL.createObjectURL(new Blob([data], { type }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = "diagram.animated.svg";
+    a.download = name;
     a.click();
     URL.revokeObjectURL(url);
+  }, []);
+
+  const downloadSvg = useCallback(() => {
+    downloadBlob(animatedSvg, "image/svg+xml", "diagram.animated.svg");
     flash("Downloaded diagram.animated.svg");
-  }, [animatedSvg, flash]);
+  }, [animatedSvg, downloadBlob, flash]);
+
+  const downloadSource = useCallback(() => {
+    downloadBlob(source, "text/plain", "diagram.mmd");
+    flash("Downloaded diagram.mmd");
+  }, [source, downloadBlob, flash]);
 
   const copyEmbed = useCallback(async () => {
     const snippet = `<!-- Diagraw animated SVG. Animates inline in HTML/JSX and when opened as a .svg file.\n     For GitHub READMEs or email, export a GIF/MP4 instead (animation is stripped there). -->\n${animatedSvg}`;
@@ -130,10 +287,30 @@ export default function Editor({
     flash("Embed snippet copied");
   }, [animatedSvg, flash]);
 
+  const copyLink = useCallback(async () => {
+    const url = buildShareUrl({ v: 1, source, opts, theme });
+    window.history.replaceState(null, "", url);
+    await navigator.clipboard.writeText(url);
+    flash("Shareable link copied");
+  }, [source, opts, theme, flash]);
+
+  const openSourceFile = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file) return;
+      setSource(await file.text());
+      flash(`Loaded ${file.name}`);
+    },
+    [flash],
+  );
+
   const total =
     counts.edges + counts.nodes > 0
       ? `${counts.nodes} nodes / ${counts.edges} edges`
       : "";
+
+  const isFit = view.zoom === 1 && view.x === 0 && view.y === 0;
 
   return (
     <div
@@ -145,23 +322,40 @@ export default function Editor({
       <section className="pane pane-source" aria-label="Diagram source">
         <div className="pane-header">
           <span>Source</span>
-          <select
-            aria-label="Load a sample diagram"
-            value=""
-            onChange={(e) => {
-              const s = SAMPLES.find((x) => x.id === e.target.value);
-              if (s) setSource(s.source);
-            }}
-          >
-            <option value="" disabled>
-              Sample…
-            </option>
-            {SAMPLES.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
+          <span className="pane-actions">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => fileRef.current?.click()}
+            >
+              Open…
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".mmd,.mermaid,.txt"
+              hidden
+              onChange={openSourceFile}
+              aria-label="Open a Mermaid source file"
+            />
+            <select
+              aria-label="Load a sample diagram"
+              value=""
+              onChange={(e) => {
+                const s = SAMPLES.find((x) => x.id === e.target.value);
+                if (s) setSource(s.source);
+              }}
+            >
+              <option value="" disabled>
+                Sample…
               </option>
-            ))}
-          </select>
+              {SAMPLES.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </span>
         </div>
         <textarea
           className="source-input"
@@ -207,18 +401,64 @@ export default function Editor({
           </span>
         </div>
 
-        <div className="stage">
+        <div
+          ref={stageRef}
+          className={`stage ${isPanning ? "is-panning" : ""}`}
+          onPointerDown={onStagePointerDown}
+          onPointerMove={onStagePointerMove}
+          onPointerUp={onStagePointerEnd}
+          onPointerCancel={onStagePointerEnd}
+          onDoubleClick={onStageDoubleClick}
+        >
           {error ? (
             <p className="stage-error" role="alert">
               {error}
             </p>
           ) : (
             <div
-              key={replayKey}
-              className="stage-svg"
-              dangerouslySetInnerHTML={{ __html: animatedSvg }}
-            />
+              ref={stageViewRef}
+              className="stage-view"
+              style={{
+                transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
+              }}
+            >
+              <div
+                key={replayKey}
+                className="stage-svg"
+                dangerouslySetInnerHTML={{ __html: animatedSvg }}
+              />
+            </div>
           )}
+
+          <div className="stage-tools" role="toolbar" aria-label="Zoom">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => zoomStep(1 / 1.25)}
+              aria-label="Zoom out"
+            >
+              −
+            </button>
+            <span className="stage-zoom" aria-live="polite">
+              {Math.round(view.zoom * 100)}%
+            </span>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => zoomStep(1.25)}
+              aria-label="Zoom in"
+            >
+              +
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={resetView}
+              disabled={isFit}
+            >
+              Fit
+            </button>
+          </div>
         </div>
 
         <div className="controls">
@@ -295,6 +535,16 @@ export default function Editor({
           </div>
 
           <div className="export-row">
+            <button type="button" className="btn btn-ghost btn-sm" onClick={copyLink}>
+              Copy link
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={downloadSource}
+            >
+              .mmd
+            </button>
             <button
               type="button"
               className="btn btn-ghost btn-sm"
