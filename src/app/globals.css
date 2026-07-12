@@ -601,6 +601,46 @@
 }
 
 /* =========================================================================
+   Changelog
+   ========================================================================= */
+.release {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: var(--space-6);
+  margin-block-end: var(--space-6);
+}
+.release-head h2 {
+  margin-block: var(--space-2) var(--space-3);
+  font-size: var(--step-3);
+}
+.release-head p {
+  max-width: 62ch;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+.release-list {
+  margin-block: var(--space-5);
+  padding-inline-start: 1.2em;
+  display: grid;
+  gap: var(--space-3);
+  line-height: 1.7;
+}
+.release-list code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.release-demo {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* =========================================================================
    Footer
    ========================================================================= */
 .site-footer {

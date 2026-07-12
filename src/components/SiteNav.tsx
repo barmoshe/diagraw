@@ -6,6 +6,7 @@ const LINKS = [
   { href: "/editor", label: "Editor" },
   { href: "/gallery", label: "Gallery" },
   { href: "/docs", label: "Docs" },
+  { href: "/changelog", label: "Changelog" },
   { href: "/demo", label: "Scroll demo" },
 ];
 
