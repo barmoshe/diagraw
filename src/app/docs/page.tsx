@@ -138,6 +138,13 @@ export default function DocsPage() {
                     <td>Mermaid render theme (dark, default, neutral, forest, base).</td>
                   </tr>
                   <tr>
+                    <td>Replay</td>
+                    <td>
+                      Click the preview (or hit Replay) and the diagram draws itself
+                      again.
+                    </td>
+                  </tr>
+                  <tr>
                     <td>Pan &amp; zoom</td>
                     <td>
                       Drag the preview to pan; Ctrl/Cmd+wheel or pinch to zoom at the

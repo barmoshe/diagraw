@@ -75,6 +75,8 @@ export default function Editor({
     originX: number;
     originY: number;
   } | null>(null);
+  const panMoved = useRef(false);
+  const clickTimer = useRef<number | null>(null);
 
   const setOpt = <K extends keyof AnimateOptions>(
     key: K,
@@ -218,6 +220,7 @@ export default function Editor({
         originX: view.x,
         originY: view.y,
       };
+      panMoved.current = false;
       e.currentTarget.setPointerCapture(e.pointerId);
       setIsPanning(true);
     },
@@ -230,26 +233,42 @@ export default function Editor({
       if (!p || e.pointerId !== p.id) return;
       const dx = e.clientX - p.startX;
       const dy = e.clientY - p.startY;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) panMoved.current = true;
       setView((v) => ({ ...v, x: p.originX + dx, y: p.originY + dy }));
     },
     [],
   );
 
+  // Press-and-release without movement is a click, and a click makes the
+  // diagram move: it replays the self-drawing animation. Detected on
+  // pointerup (setPointerCapture suppresses native click), deferred briefly
+  // so a quick second click cancels it and resets the view instead. Toolbar
+  // presses never get here - pointerdown ignores them.
   const onStagePointerEnd = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (panPointer.current?.id !== e.pointerId) return;
       panPointer.current = null;
       setIsPanning(false);
-    },
-    [],
-  );
-
-  const onStageDoubleClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if ((e.target as Element).closest(".stage-tools")) return;
-      resetView();
+      if (panMoved.current || e.button !== 0) return;
+      if (clickTimer.current !== null) {
+        window.clearTimeout(clickTimer.current);
+        clickTimer.current = null;
+        resetView();
+        return;
+      }
+      clickTimer.current = window.setTimeout(() => {
+        clickTimer.current = null;
+        setReplayKey((k) => k + 1);
+      }, 250);
     },
     [resetView],
+  );
+
+  useEffect(
+    () => () => {
+      if (clickTimer.current !== null) window.clearTimeout(clickTimer.current);
+    },
+    [],
   );
 
   const flash = useCallback((msg: string) => {
@@ -408,7 +427,7 @@ export default function Editor({
           onPointerMove={onStagePointerMove}
           onPointerUp={onStagePointerEnd}
           onPointerCancel={onStagePointerEnd}
-          onDoubleClick={onStageDoubleClick}
+          title="Click to replay · drag to pan · double-click to reset"
         >
           {error ? (
             <p className="stage-error" role="alert">
