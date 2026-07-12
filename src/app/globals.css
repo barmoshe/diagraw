@@ -340,13 +340,31 @@
   flex: 1;
   display: grid;
   place-items: center;
-  overflow: auto;
+  overflow: hidden;
   padding: var(--space-6);
   background-color: var(--canvas-bg);
   background-image:
     linear-gradient(var(--canvas-grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
   background-size: 24px 24px;
+  touch-action: none;
+  cursor: grab;
+}
+.stage.is-panning {
+  cursor: grabbing;
+  user-select: none;
+}
+@media (max-width: 860px) {
+  /* On small screens the page scrolls past the stage; let native touch win. */
+  .stage {
+    overflow: auto;
+    touch-action: auto;
+    cursor: default;
+  }
+}
+.stage-view {
+  max-width: 100%;
+  will-change: transform;
 }
 .stage-svg {
   max-width: 100%;
@@ -354,6 +372,33 @@
 .stage-svg svg {
   max-width: 100%;
   height: auto;
+}
+.stage-tools {
+  position: absolute;
+  inset-block-end: var(--space-3);
+  inset-inline-end: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+  cursor: default;
+}
+.stage-zoom {
+  min-width: 4.5ch;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-soft);
+}
+.pane-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 .stage-error {
   max-width: 52ch;

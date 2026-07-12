@@ -29,9 +29,18 @@ const EDGE_SELECTOR = [
   ".relation",
   ".transition",
   "[class*='edgePath'] path",
+  "line[class*='node-line']", // timeline connectors
 ].join(",");
 
-/** Selectors for node-like groups that should fade in. */
+/**
+ * Selectors for node-like groups that should fade in.
+ *
+ * journey/timeline (mermaid v11) emit flat elements with no `g.node`-style
+ * class on the wrapper, so their tasks/sections are matched structurally via
+ * `:has()` on the plain `g` that mermaid wraps each of them in (verified
+ * against mermaid 11.16 output). `:has()` only runs at bake time in the
+ * browser - the exported SVG carries baked `.dg-*` classes, not these.
+ */
 const NODE_SELECTOR = [
   "g.node",
   ".actor",
@@ -39,10 +48,18 @@ const NODE_SELECTOR = [
   ".statediagram-state",
   ".er.entityBox",
   ".mindmap-node",
+  "g:has(> rect.task)", // journey tasks (rect + face + actor dots + label)
+  "g:has(> rect.journey-section)", // journey section bands
+  "svg > circle[class*='actor-']", // journey legend dots
+  "g.timeline-node",
 ].join(",");
 
 /** Selectors for standalone labels (node labels ride along with their node). */
-const LABEL_SELECTOR = [".edgeLabels .edgeLabel", ".messageText"].join(",");
+const LABEL_SELECTOR = [
+  ".edgeLabels .edgeLabel",
+  ".messageText",
+  "text.legend", // journey legend names
+].join(",");
 
 function uniq<T>(arr: T[]): T[] {
   return Array.from(new Set(arr));

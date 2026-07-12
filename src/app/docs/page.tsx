@@ -94,11 +94,11 @@ export default function DocsPage() {
                     <td>Top-to-bottom (time order)</td>
                   </tr>
                   <tr>
-                    <td>stateDiagram, mindmap, timeline, gitGraph</td>
+                    <td>stateDiagram, mindmap, timeline, gitGraph, journey</td>
                     <td>Positional cascade</td>
                   </tr>
                   <tr>
-                    <td>class, ER, journey, others</td>
+                    <td>class, ER, others</td>
                     <td>Positional cascade / graceful fade-in</td>
                   </tr>
                 </tbody>
@@ -136,6 +136,21 @@ export default function DocsPage() {
                   <tr>
                     <td>Theme</td>
                     <td>Mermaid render theme (dark, default, neutral, forest, base).</td>
+                  </tr>
+                  <tr>
+                    <td>Pan &amp; zoom</td>
+                    <td>
+                      Drag the preview to pan; Ctrl/Cmd+wheel or pinch to zoom at the
+                      cursor, or use the −/+/Fit buttons. Double-click resets.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Save &amp; share</td>
+                    <td>
+                      Work autosaves to your browser. &quot;Copy link&quot; packs the
+                      diagram into a shareable URL, and the source round-trips as a{" "}
+                      <code>.mmd</code> file (Open… / .mmd).
+                    </td>
                   </tr>
                 </tbody>
               </table>

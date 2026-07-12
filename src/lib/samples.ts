@@ -31,6 +31,36 @@ export const SAMPLES: Sample[] = [
   A-->>U: 201 Created`,
   },
   {
+    id: "org",
+    label: "Org chart",
+    source: `flowchart TD
+  CEO[Dana - CEO] --> CTO[Omer - CTO]
+  CEO --> CPO[Noa - CPO]
+  CTO --> BE[Backend team]
+  CTO --> FE[Frontend team]
+  CPO --> DES[Design]
+  CPO --> PM[Product]
+  BE --> B1([Avi])
+  BE --> B2([Maya])
+  FE --> F1([Tom])`,
+  },
+  {
+    id: "journey",
+    label: "User journey",
+    source: `journey
+  title Checkout experience
+  section Browse
+    Find product: 5: Shopper
+    Compare options: 3: Shopper
+  section Buy
+    Add to cart: 4: Shopper
+    Enter payment: 2: Shopper, Support
+    Confirm order: 5: Shopper
+  section After
+    Track delivery: 4: Shopper
+    Leave review: 3: Shopper`,
+  },
+  {
     id: "state",
     label: "State",
     source: `stateDiagram-v2
