@@ -25,9 +25,10 @@
   top: 0;
   z-index: 40;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-2) var(--space-4);
   padding: var(--space-3) var(--space-6);
   border-bottom: 1px solid var(--border);
   background: color-mix(in oklch, var(--bg) 82%, transparent);
@@ -54,8 +55,9 @@
 }
 .nav-links {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-2) var(--space-5);
   font-family: var(--font-mono);
   font-size: var(--step--1);
 }
@@ -68,12 +70,11 @@
   color: var(--primary);
 }
 @media (max-width: 720px) {
-  .nav-links {
-    gap: var(--space-4);
+  .site-nav {
+    padding-inline: var(--space-4);
   }
-  .nav-links a:nth-child(3),
-  .nav-links a:nth-child(4) {
-    display: none;
+  .nav-links {
+    gap: var(--space-2) var(--space-4);
   }
 }
 
@@ -506,6 +507,9 @@
 }
 .docs-body {
   max-width: 72ch;
+  /* Let the pre/table scroll wrappers shrink instead of holding the grid
+     column open (grid items default to min-width:auto). */
+  min-width: 0;
 }
 .docs-body h2 {
   margin-block: var(--space-8) var(--space-4);
@@ -638,6 +642,22 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+}
+@media (max-width: 720px) {
+  .release {
+    padding: var(--space-4);
+  }
+  /* The journey demo is a wide diagram: keep it readable and let it swipe
+     sideways instead of shrinking to a sliver. */
+  .release-demo .gallery-canvas {
+    min-height: 0;
+    overflow-x: auto;
+    justify-items: start;
+    -webkit-overflow-scrolling: touch;
+  }
+  .release-demo .gallery-canvas svg {
+    min-width: 560px;
+  }
 }
 
 /* =========================================================================
